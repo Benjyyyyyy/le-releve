@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Relevé</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mise en page : quotidien de salle des marchés. Bandeau de cotations, puis une colonne de rubriques ; la rubrique Bourse est un tableau opérable. */
+:root {
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --ink: #14212b;
+  --muted: #5b6b77;
+  --rule: #d6dde2;
+  --accent: #0d6b6b;
+  --accent-soft: #e0efee;
+  --up: #17834a;
+  --down: #c2392b;
+  --flat: #7a8792;
+  --up-soft: #e3f3ea;
+  --down-soft: #fbe7e4;
+  --font-display: "Newsreader", "Georgia", "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171d; --surface: #16222a; --ink: #e6edf1; --muted: #93a3ae; --rule: #2a3a45;
+    --accent: #5cc4be; --accent-soft: #173533; --up: #4cc884; --down: #ff7b6b; --flat: #8796a1;
+    --up-soft: #15342a; --down-soft: #3a1f1c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171d; --surface: #16222a; --ink: #e6edf1; --muted: #93a3ae; --rule: #2a3a45;
+  --accent: #5cc4be; --accent-soft: #173533; --up: #4cc884; --down: #ff7b6b; --flat: #8796a1;
+  --up-soft: #15342a; --down-soft: #3a1f1c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: inherit; }
+.page { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--flat); }
+
+/* En-tête */
+.masthead { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; padding-top: 24px; border-bottom: 3px solid var(--ink); padding-bottom: 10px; }
+.masthead h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 6vw, 3.4rem); line-height: 1; margin: 0; letter-spacing: -0.01em; }
+.masthead .tag { color: var(--muted); font-size: 0.86rem; margin-top: 6px; }
+.edition { text-align: right; font-size: 0.82rem; color: var(--muted); }
+.edition strong { display: block; color: var(--ink); font-weight: 600; font-size: 0.95rem; text-transform: capitalize; }
+
+/* Navigation */
+nav.sections { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; margin-top: -16px; border-bottom: 1px solid var(--rule); scrollbar-width: none; }
+nav.sections a { text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 6px 12px; border-radius: 999px; white-space: nowrap; color: var(--muted); }
+nav.sections a:hover, nav.sections a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+
+/* Bandeau des cotations */
+.reperes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.repere { padding: 10px 12px; display: grid; gap: 2px; min-width: 0; box-shadow: 1px 1px 0 var(--rule); }
+.repere .nom { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.repere .val { font-size: 1.05rem; font-weight: 500; }
+.repere .ligne { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.8rem; }
+.repere svg { width: 64px; height: 20px; flex: none; }
+
+/* Rubriques */
+section { display: grid; gap: 14px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 60px); }
+.rubrique { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--ink); padding-top: 8px; }
+.rubrique h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin: 0; text-wrap: balance; }
+.rubrique .note { font-size: 0.8rem; color: var(--muted); }
+.deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+.deux > * { min-width: 0; }
+h3.col { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 0 0 4px; font-weight: 600; }
+
+.articles { list-style: none; margin: 0; padding: 0; display: grid; }
+.articles li { padding-block: 10px; border-bottom: 1px solid var(--rule); display: grid; gap: 3px; min-width: 0; }
+.articles li:first-child { padding-top: 4px; }
+.articles a.titre { text-decoration: none; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.articles a.titre:hover, .articles a.titre:focus-visible { color: var(--accent); text-decoration: underline; outline: none; }
+.articles .lead a.titre { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.articles .resume { color: var(--muted); font-size: 0.88rem; }
+.meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.76rem; color: var(--muted); }
+.meta .src { font-weight: 600; color: var(--ink); }
+.langue { font-family: var(--font-data); font-size: 0.68rem; border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+
+/* Bourse */
+.movers { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+.mover-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; min-width: 0; }
+.mover-box h3 { margin: 0 0 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.mover { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding-block: 5px; border-bottom: 1px dashed var(--rule); font-size: 0.9rem; }
+.mover:last-child { border-bottom: 0; }
+.outils { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.82rem; background: var(--surface); color: var(--muted); border: 0; padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+input#recherche { font: inherit; font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); min-width: 0; flex: 1 1 160px; max-width: 260px; }
+input#recherche:focus-visible { outline: 2px solid var(--accent); }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 720px; }
+th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+th button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; letter-spacing: inherit; text-transform: inherit; }
+th button:focus-visible { outline: 2px solid var(--accent); }
+th[aria-sort="descending"] button::after { content: " ▼"; }
+th[aria-sort="ascending"] button::after { content: " ▲"; }
+tbody tr.ligne-val { cursor: pointer; }
+tbody tr.ligne-val:hover { background: var(--accent-soft); }
+tbody tr.ligne-val:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.soc { font-weight: 500; }
+.tk { font-family: var(--font-data); font-size: 0.74rem; color: var(--muted); margin-left: 6px; }
+.chip { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.chip.h { background: var(--up-soft); color: var(--up); }
+.chip.b { background: var(--down-soft); color: var(--down); }
+.chip.n { background: var(--accent-soft); color: var(--muted); }
+tr.detail td { white-space: normal; text-align: left; background: var(--bg); font-size: 0.86rem; }
+tr.detail .bloc { display: grid; gap: 4px; max-width: 75ch; }
+td svg { width: 70px; height: 20px; vertical-align: middle; }
+.avert { font-size: 0.8rem; color: var(--muted); }
+.classements { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.classement { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; min-width: 0; display: grid; gap: 6px; align-content: start; }
+.classement h3 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; }
+.classement .sous { font-size: 0.78rem; color: var(--muted); }
+.classement ol { list-style: none; margin: 0; padding: 0; }
+.classement li { display: grid; grid-template-columns: 2.2em 1fr auto; gap: 8px; align-items: baseline; padding-block: 5px; border-bottom: 1px dashed var(--rule); font-size: 0.88rem; }
+.classement li:last-child { border-bottom: 0; }
+.classement .rg { font-family: var(--font-data); color: var(--muted); font-size: 0.78rem; }
+.classement .sep { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding-top: 8px; }
+
+footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem; color: var(--muted); display: grid; gap: 4px; }
+.etat { padding: 40px 0; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .articles a.titre, nav.sections a { transition: color .15s, background .15s; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="masthead">
+    <div>
+      <h1>Le Relevé</h1>
+      <div class="tag">Bourse, aéronautique, géopolitique et énergie, relevés chaque soir.</div>
+    </div>
+    <div class="edition"><strong id="edition-date">Édition du jour</strong><span id="edition-heure">Chargement…</span></div>
+  </header>
+
+  <nav class="sections" aria-label="Rubriques">
+    <a href="#une">À la une</a><a href="#bourse">Bourse</a><a href="#reporting">Reporting</a><a href="#aero">Aéronautique</a>
+    <a href="#geo">Géopolitique</a><a href="#energie">Énergie</a>
+  </nav>
+
+  <div class="reperes" id="reperes" aria-label="Marchés"></div>
+
+  <div id="contenu"><p class="etat">Chargement de l'édition…</p></div>
+
+  <footer>
+    <div>Sources : Yahoo Finance (cours, en différé), Le Monde, France 24, franceinfo, Le Figaro, BBC News, The Guardian, New York Times, Al Jazeera et Google Actualités. Les liens mènent aux articles d'origine.</div>
+    <div>Les perspectives sont une synthèse automatique de l'actualité produite chaque lundi. Ce journal ne constitue pas un conseil en investissement.</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmtN = (v, d = 2) => v == null ? "–" : v.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmtPct = (v) => v == null ? "–" : (v > 0 ? "+" : "") + fmtN(v) + " %";
+  const sens = (v) => v == null || Math.abs(v) < 0.005 ? "flat" : v > 0 ? "up" : "down";
+  const depuis = (iso) => {
+    if (!iso) return "";
+    const m = Math.round((Date.now() - new Date(iso)) / 60000);
+    if (m < 60) return `il y a ${Math.max(m, 1)} min`;
+    if (m < 1440) return `il y a ${Math.round(m / 60)} h`;
+    return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  };
+  const spark = (serie, cls) => {
+    if (!serie || serie.length < 2) return "";
+    const w = 64, h = 20, min = Math.min(...serie), max = Math.max(...serie), r = max - min || 1;
+    const pts = serie.map((v, i) => `${(i / (serie.length - 1) * (w - 2) + 1).toFixed(1)},${(h - 2 - (v - min) / r * (h - 4)).toFixed(1)}`);
+    const last = pts[pts.length - 1].split(",");
+    return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts.join(" ")}" fill="none" stroke="currentColor" stroke-width="1.4" class="${cls}"/><circle cx="${last[0]}" cy="${last[1]}" r="2" fill="currentColor" class="${cls}"/></svg>`;
+  };
+  const decimales = (v) => v < 10 ? 4 : v > 1000 ? 0 : 2;
+
+  function articles(liste, { lead = false, resume = true } = {}) {
+    if (!liste || !liste.length) return `<p class="avert">Aucun article récupéré pour cette édition.</p>`;
+    return `<ul class="articles">${liste.map((a, i) => `
+      <li class="${lead && i === 0 ? "lead" : ""}">
+        <a class="titre" href="${esc(a.lien)}" target="_blank" rel="noopener">${esc(a.titre)}</a>
+        ${resume && a.resume ? `<div class="resume">${esc(a.resume)}</div>` : ""}
+        <div class="meta"><span class="src">${esc(a.source)}</span><span>${depuis(a.date)}</span>${a.langue ? `<span class="langue">${a.langue.toUpperCase()}</span>` : ""}</div>
+      </li>`).join("")}</ul>`;
+  }
+
+
+  function classements(j) {
+    const eur = (x) => x.devise === "USD" && j.eurusd ? x.cours / j.eurusd : x.cours;
+    const li = (x, i, val, cls) => `<li><span class="rg">${i}</span><span><span class="soc">${esc(x.nom)}</span><span class="tk">${esc(x.ticker)}</span></span><span class="num ${cls || ""}">${val}</span></li>`;
+    const bloc = (titre, sous, liste, val, cls, n = 10, bas = 0) => {
+      const tri = liste.filter((x) => val(x) != null).sort((a, b) => val(b) - val(a));
+      const haut = tri.slice(0, n).map((x, i) => li(x, i + 1, fmt(titre, x, val(x)), cls && cls(val(x)))).join("");
+      const fin = bas ? `<li class="sep" style="display:block">Bas du classement</li>` + tri.slice(-bas).map((x, i) => li(x, tri.length - bas + i + 1, fmt(titre, x, val(x)), cls && cls(val(x)))).join("") : "";
+      return `<div class="classement"><h3>${titre}</h3><div class="sous">${sous}</div><ol>${haut}${fin}</ol></div>`;
+    };
+    const fmt = (titre, x, v) => titre.startsWith("1") ? `${fmtN(v)} €${x.devise === "USD" ? ` <small class="flat">(${fmtN(x.cours)} $)</small>` : ""}`
+      : titre.startsWith("2") ? fmtPct(v) : `${v > 0 ? "+" : ""}${v} · ${esc(x.tendance)}`;
+    return bloc("1 · Valeur actuelle", "Cours le plus élevé, converti en euros", j.valeurs, eur, null, 10)
+      + bloc("2 · Variation sur une semaine", "Dernier cours comparé à celui d'il y a 7 jours", j.valeurs, (x) => x.var_semaine, sens, 10, 5)
+      + bloc("3 · Perspectives", "Score de −5 à +5 tiré de la veille d'actualités", j.valeurs, (x) => x.score, (v) => v >= 2 ? "up" : v <= -2 ? "down" : "flat", 10, 5);
+  }
+
+
+  // Cours en direct : seulement quand le site est servi avec la fonction /api/cours (hébergement Vercel).
+  function direct(j, redessiner) {
+    const lignes = [...j.reperes, ...j.valeurs];
+    const maj = () => fetch("api/cours?symbols=" + encodeURIComponent(lignes.map((x) => x.ticker).join(",")), { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
+      .then((q) => {
+        let n = 0;
+        lignes.forEach((x) => {
+          const c = q[x.ticker];
+          if (!c || c.prix == null) return;
+          x.cours = c.prix; if (c.var != null) x.var_jour = Math.round(c.var * 100) / 100; n++;
+          if (x.serie && x.serie.length) x.serie[x.serie.length - 1] = c.prix;
+        });
+        if (!n) return;
+        redessiner();
+        const h = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Europe/Paris" });
+        $("#edition-heure").innerHTML = `<span class="up">● En direct</span> · cours à ${h} (Paris)`;
+        setTimeout(maj, 60000);
+      })
+      .catch(() => {});
+    maj();
+  }
+
+  function rendre(j) {
+    const d = new Date(j.genere_le);
+    $("#edition-date").textContent = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    $("#edition-heure").textContent = "Mis à jour à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" }) + " (Paris)";
+
+    const dessinerReperes = () => { $("#reperes").innerHTML = j.reperes.map((r) => `
+      <div class="repere">
+        <span class="nom">${esc(r.nom)}</span>
+        <span class="val num">${fmtN(r.cours, decimales(r.cours))}${r.unite && r.unite !== "pts" ? ` <small class="flat">${esc(r.unite)}</small>` : ""}</span>
+        <span class="ligne"><span class="num ${sens(r.var_jour)}">${fmtPct(r.var_jour)}</span>${spark(r.serie, sens(r.var_mois))}</span>
+      </div>`).join(""); };
+    dessinerReperes();
+
+    const v = j.veilles;
+    const mover = (x) => `<div class="mover"><span><span class="soc">${esc(x.nom)}</span><span class="tk">${esc(x.ticker)}</span></span><span class="num ${sens(x.var_jour)}">${fmtPct(x.var_jour)}</span></div>`;
+    const actusValeurs = Object.entries(j.actus_valeurs || {}).flatMap(([t, l]) => {
+      const nom = (j.valeurs.find((x) => x.ticker === t) || {}).nom || t;
+      return l.slice(0, 2).map((a) => ({ ...a, source: `${nom} · ${a.source}` }));
+    });
+
+    $("#contenu").innerHTML = `
+      <section id="une">
+        <div class="rubrique"><h2>À la une</h2><span class="note">Les derniers titres des rédactions françaises et internationales</span></div>
+        <div class="deux">
+          <div><h3 class="col">France</h3>${articles(j.france.slice(0, 10), { lead: true })}</div>
+          <div><h3 class="col">International</h3>${articles(j.monde.slice(0, 10), { lead: true })}</div>
+        </div>
+      </section>
+
+      <section id="bourse">
+        <div class="rubrique"><h2>Bourse</h2><span class="note">60 valeurs du CAC 40 et de Wall Street · perspectives du ${j.perspectives_du ? new Date(j.perspectives_du).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "–"}</span></div>
+        <div class="movers">
+          <div class="mover-box"><h3>Plus fortes hausses du jour</h3><div id="m-haut"></div></div>
+          <div class="mover-box"><h3>Plus fortes baisses du jour</h3><div id="m-bas"></div></div>
+          <div class="mover-box" style="min-width:0"><h3>Ce qui fait bouger les cours</h3>${articles(actusValeurs.slice(0, 5), { resume: false })}</div>
+        </div>
+        <div class="outils">
+          <div class="seg" role="group" aria-label="Marché">
+            <button type="button" id="f-tous" data-f="tous" aria-pressed="true">Toutes</button>
+            <button type="button" id="f-cac" data-f="CAC 40" aria-pressed="false">CAC 40</button>
+            <button type="button" id="f-us" data-f="US" aria-pressed="false">États-Unis</button>
+          </div>
+          <input id="recherche" type="search" placeholder="Rechercher une société" aria-label="Rechercher une société">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th data-k="nom"><button type="button">Société</button></th>
+              <th data-k="cours"><button type="button">Cours</button></th>
+              <th data-k="var_jour" aria-sort="descending"><button type="button">Jour</button></th>
+              <th data-k="var_semaine"><button type="button">Semaine</button></th>
+              <th data-k="var_mois"><button type="button">Mois</button></th>
+              <th>30 jours</th>
+              <th data-k="score"><button type="button">Perspective</button></th>
+            </tr></thead>
+            <tbody id="corps"></tbody>
+          </table>
+        </div>
+        <p class="avert">Cliquez sur une ligne pour lire l'analyse de la veille. Score de −5 à +5 issu de l'actualité de la semaine. Cours en différé, en devise locale.</p>
+      </section>
+
+
+      <section id="reporting">
+        <div class="rubrique"><h2>Reporting de la semaine</h2><span class="note">Les trois classements du rapport Excel, recalculés chaque jour · perspectives du ${j.perspectives_du ? new Date(j.perspectives_du).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "–"}</span></div>
+        <div class="classements">${classements(j)}</div>
+      </section>
+      ${["aero", "geo", "energie"].map((k) => `
+      <section id="${k}">
+        <div class="rubrique"><h2>${esc(v[k].titre)}</h2><span class="note">Veille des dernières 24 heures, presse française et internationale</span></div>
+        <div class="deux">
+          <div><h3 class="col">Presse française</h3>${articles(v[k].articles.filter((a) => a.langue === "fr").slice(0, 8), { lead: true, resume: false })}</div>
+          <div><h3 class="col">Presse internationale</h3>${articles(v[k].articles.filter((a) => a.langue === "en").slice(0, 8), { lead: true, resume: false })}</div>
+        </div>
+      </section>`).join("")}
+    `;
+
+    const etat = { f: "tous", q: "", k: "var_jour", dir: -1, ouvert: null };
+    try { const s = JSON.parse(localStorage.getItem("releve-tri") || "null"); if (s) Object.assign(etat, s, { ouvert: null }); } catch (e) {}
+
+    function tableau() {
+      let l = j.valeurs.filter((x) => (etat.f === "tous" || x.marche === etat.f) && (!etat.q || (x.nom + " " + x.ticker).toLowerCase().includes(etat.q)));
+      l.sort((a, b) => {
+        const A = a[etat.k], B = b[etat.k];
+        if (A == null) return 1; if (B == null) return -1;
+        return (typeof A === "string" ? A.localeCompare(B, "fr") : A - B) * etat.dir;
+      });
+      $("#corps").innerHTML = l.map((x) => {
+        const t = x.tendance === "Haussière" ? "h" : x.tendance === "Baissière" ? "b" : "n";
+        const ligne = `<tr class="ligne-val" tabindex="0" data-t="${esc(x.ticker)}" aria-expanded="${etat.ouvert === x.ticker}">
+          <td><span class="soc">${esc(x.nom)}</span><span class="tk">${esc(x.ticker)}</span></td>
+          <td class="num">${fmtN(x.cours)} <small class="flat">${x.devise === "USD" ? "$" : "€"}</small></td>
+          <td class="num ${sens(x.var_jour)}">${fmtPct(x.var_jour)}</td>
+          <td class="num ${sens(x.var_semaine)}">${fmtPct(x.var_semaine)}</td>
+          <td class="num ${sens(x.var_mois)}">${fmtPct(x.var_mois)}</td>
+          <td>${spark(x.serie, sens(x.var_mois))}</td>
+          <td>${x.score == null ? "–" : `<span class="chip ${t}">${x.score > 0 ? "+" : ""}${x.score} · ${esc(x.tendance)}</span>`}</td>
+        </tr>`;
+        const detail = etat.ouvert === x.ticker ? `<tr class="detail"><td colspan="7"><div class="bloc">
+          <div>${esc(x.analyse || "Pas d'analyse disponible cette semaine.")}</div>
+          ${x.catalyseurs ? `<div class="avert">À surveiller : ${esc(x.catalyseurs)}</div>` : ""}
+          <div class="avert">Dernière cotation : ${new Date(x.date).toLocaleDateString("fr-FR")}</div></div></td></tr>` : "";
+        return ligne + detail;
+      }).join("") || `<tr><td colspan="7">Aucune société ne correspond.</td></tr>`;
+      document.querySelectorAll("th[data-k]").forEach((th) => th.setAttribute("aria-sort", th.dataset.k === etat.k ? (etat.dir < 0 ? "descending" : "ascending") : "none"));
+      document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.f === etat.f));
+      try { localStorage.setItem("releve-tri", JSON.stringify({ f: etat.f, k: etat.k, dir: etat.dir })); } catch (e) {}
+    }
+    const dessinerMovers = () => {
+      $("#m-haut").innerHTML = [...j.valeurs].sort((a, b) => b.var_jour - a.var_jour).slice(0, 5).map(mover).join("");
+      $("#m-bas").innerHTML = [...j.valeurs].sort((a, b) => a.var_jour - b.var_jour).slice(0, 5).map(mover).join("");
+    };
+    dessinerMovers();
+    tableau();
+    direct(j, () => { dessinerReperes(); dessinerMovers(); tableau(); });
+    document.querySelectorAll("th[data-k] button").forEach((b) => b.addEventListener("click", () => {
+      const k = b.parentElement.dataset.k;
+      etat.dir = etat.k === k ? -etat.dir : (k === "nom" ? 1 : -1); etat.k = k; tableau();
+    }));
+    document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { etat.f = b.dataset.f; tableau(); }));
+    $("#recherche").addEventListener("input", (e) => { etat.q = e.target.value.trim().toLowerCase(); tableau(); });
+    const basculer = (tr) => { etat.ouvert = etat.ouvert === tr.dataset.t ? null : tr.dataset.t; tableau(); };
+    $("#corps").addEventListener("click", (e) => { const tr = e.target.closest("tr.ligne-val"); if (tr) basculer(tr); });
+    $("#corps").addEventListener("keydown", (e) => { const tr = e.target.closest("tr.ligne-val"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); basculer(tr); } });
+
+    const ancre = location.hash.slice(1);
+    if (ancre && document.getElementById(ancre)) document.getElementById(ancre).scrollIntoView();
+  }
+
+  fetch("journal.json", { cache: "no-store" })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(rendre)
+    .catch(() => { $("#contenu").innerHTML = `<p class="etat">L'édition n'a pas pu être chargée. Rechargez la page dans quelques instants.</p>`; $("#edition-heure").textContent = ""; });
+})();
+</script>
+
+</body>
+</html>
