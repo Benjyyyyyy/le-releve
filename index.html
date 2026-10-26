@@ -147,14 +147,14 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
   <header class="masthead">
     <div>
       <h1>Le Relevé</h1>
-      <div class="tag">Bourse, aéronautique, géopolitique et énergie, relevés chaque soir.</div>
+      <div class="tag">Bourse, aéronautique, géopolitique, énergie et IA, relevés chaque soir.</div>
     </div>
     <div class="edition"><strong id="edition-date">Édition du jour</strong><span id="edition-heure">Chargement…</span></div>
   </header>
 
   <nav class="sections" aria-label="Rubriques">
     <a href="#une">À la une</a><a href="#bourse">Bourse</a><a href="#reporting">Reporting</a><a href="#aero">Aéronautique</a>
-    <a href="#geo">Géopolitique</a><a href="#energie">Énergie</a>
+    <a href="#geo">Géopolitique</a><a href="#energie">Énergie</a><a href="#ia">IA</a>
   </nav>
 
   <div class="reperes" id="reperes" aria-label="Marchés"></div>
@@ -162,7 +162,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
   <div id="contenu"><p class="etat">Chargement de l'édition…</p></div>
 
   <footer>
-    <div>Sources : Boursorama (cours de Paris en temps réel) et Yahoo Finance (valeurs américaines, indices et matières premières, léger différé), Le Monde, France 24, franceinfo, Le Figaro, BBC News, The Guardian, New York Times, Al Jazeera et Google Actualités. Les liens mènent aux articles d'origine.</div>
+    <div>Sources : Yahoo Finance (cours, léger différé), Le Monde, France 24, franceinfo, Le Figaro, BBC News, The Guardian, New York Times, Al Jazeera et Google Actualités. Les liens mènent aux articles d'origine.</div>
     <div>Les perspectives sont une synthèse automatique de l'actualité produite chaque lundi. Ce journal ne constitue pas un conseil en investissement.</div>
   </footer>
 </div>
@@ -307,7 +307,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
         <div class="rubrique"><h2>Reporting de la semaine</h2><span class="note">Les trois classements du rapport Excel, recalculés chaque jour · perspectives du ${j.perspectives_du ? new Date(j.perspectives_du).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "–"}</span></div>
         <div class="classements">${classements(j)}</div>
       </section>
-      ${["aero", "geo", "energie"].map((k) => `
+      ${["aero", "geo", "energie", "ia"].map((k) => `
       <section id="${k}">
         <div class="rubrique"><h2>${esc(v[k].titre)}</h2><span class="note">Veille des dernières 24 heures, presse française et internationale</span></div>
         <div class="deux">
