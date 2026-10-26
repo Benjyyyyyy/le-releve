@@ -163,7 +163,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
 
   <footer>
     <div>Sources : Yahoo Finance (cours, léger différé), Le Monde, France 24, franceinfo, Le Figaro, BBC News, The Guardian, New York Times, Al Jazeera et Google Actualités. Les liens mènent aux articles d'origine.</div>
-    <div>Les perspectives sont une synthèse automatique de l'actualité produite chaque lundi. Ce journal ne constitue pas un conseil en investissement.</div>
+    <div>Les perspectives sont une synthèse automatique de l'actualité, mise à jour chaque soir. Ce journal ne constitue pas un conseil en investissement.</div>
   </footer>
 </div>
 
@@ -201,6 +201,8 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
   }
 
 
+  const PERIODES = [["var_semaine", "1 semaine"], ["var_mois", "1 mois"], ["var_annee", "1 an"]];
+  let variation;
   function classements(j) {
     const eur = (x) => x.devise === "USD" && j.eurusd ? x.cours / j.eurusd : x.cours;
     const li = (x, i, val, cls) => `<li><span class="rg">${i}</span><span><span class="soc">${esc(x.nom)}</span><span class="tk">${esc(x.ticker)}</span></span><span class="num ${cls || ""}">${val}</span></li>`;
@@ -210,10 +212,12 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
       const fin = bas ? `<li class="sep" style="display:block">Bas du classement</li>` + tri.slice(-bas).map((x, i) => li(x, tri.length - bas + i + 1, fmt(titre, x, val(x)), cls && cls(val(x)))).join("") : "";
       return `<div class="classement"><h3>${titre}</h3><div class="sous">${sous}</div><ol>${haut}${fin}</ol></div>`;
     };
+    variation = (jj, k) => bloc("2 · Variation", `<div class="seg" role="group" aria-label="Période" style="margin-block:4px">${PERIODES.map(([c, n]) =>
+      `<button type="button" data-p="${c}" aria-pressed="${c === k}">${n}</button>`).join("")}</div>`, jj.valeurs, (x) => x[k], sens, 10, 5).replace('class="classement"', 'class="classement" style="height:100%"');
     const fmt = (titre, x, v) => titre.startsWith("1") ? `${fmtN(v)} €${x.devise === "USD" ? ` <small class="flat">(${fmtN(x.cours)} $)</small>` : ""}`
       : titre.startsWith("2") ? fmtPct(v) : `${v > 0 ? "+" : ""}${v} · ${esc(x.tendance)}`;
     return bloc("1 · Valeur actuelle", "Cours le plus élevé, converti en euros", j.valeurs, eur, null, 10)
-      + bloc("2 · Variation sur une semaine", "Dernier cours comparé à celui d'il y a 7 jours", j.valeurs, (x) => x.var_semaine, sens, 10, 5)
+      + `<div id="bloc-variation">${variation(j, "var_semaine")}</div>`
       + bloc("3 · Perspectives", "Score de −5 à +5 tiré de la veille d'actualités", j.valeurs, (x) => x.score, (v) => v >= 2 ? "up" : v <= -2 ? "down" : "flat", 10, 5);
   }
 
@@ -293,18 +297,19 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
               <th data-k="var_jour" aria-sort="descending"><button type="button">Jour</button></th>
               <th data-k="var_semaine"><button type="button">Semaine</button></th>
               <th data-k="var_mois"><button type="button">Mois</button></th>
+              <th data-k="var_annee"><button type="button">Année</button></th>
               <th>30 jours</th>
               <th data-k="score"><button type="button">Perspective</button></th>
             </tr></thead>
             <tbody id="corps"></tbody>
           </table>
         </div>
-        <p class="avert">Cliquez sur une ligne pour lire l'analyse de la veille. Score de −5 à +5 issu de l'actualité de la semaine. Cours en différé, en devise locale.</p>
+        <p class="avert">Cliquez sur une ligne pour lire l'analyse de la veille. Score de −5 à +5 issu de l'actualité récente, mis à jour chaque soir. Cours en différé, en devise locale.</p>
       </section>
 
 
       <section id="reporting">
-        <div class="rubrique"><h2>Reporting de la semaine</h2><span class="note">Les trois classements du rapport Excel, recalculés chaque jour · perspectives du ${j.perspectives_du ? new Date(j.perspectives_du).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "–"}</span></div>
+        <div class="rubrique"><h2>Reporting du jour</h2><span class="note">Les trois classements du rapport, recalculés chaque soir · perspectives du ${j.perspectives_du ? new Date(j.perspectives_du).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "–"}</span></div>
         <div class="classements">${classements(j)}</div>
       </section>
       ${["aero", "geo", "energie", "ia"].map((k) => `
@@ -335,17 +340,18 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
           <td class="num ${sens(x.var_jour)}">${fmtPct(x.var_jour)}</td>
           <td class="num ${sens(x.var_semaine)}">${fmtPct(x.var_semaine)}</td>
           <td class="num ${sens(x.var_mois)}">${fmtPct(x.var_mois)}</td>
+          <td class="num ${sens(x.var_annee)}">${fmtPct(x.var_annee)}</td>
           <td>${spark(x.serie, sens(x.var_mois))}</td>
           <td>${x.score == null ? "–" : `<span class="chip ${t}">${x.score > 0 ? "+" : ""}${x.score} · ${esc(x.tendance)}</span>`}</td>
         </tr>`;
-        const detail = etat.ouvert === x.ticker ? `<tr class="detail"><td colspan="7"><div class="bloc">
+        const detail = etat.ouvert === x.ticker ? `<tr class="detail"><td colspan="8"><div class="bloc">
           <div>${esc(x.analyse || "Pas d'analyse disponible cette semaine.")}</div>
           ${x.catalyseurs ? `<div class="avert">À surveiller : ${esc(x.catalyseurs)}</div>` : ""}
           <div class="avert">Dernière cotation : ${new Date(x.date).toLocaleDateString("fr-FR")}</div></div></td></tr>` : "";
         return ligne + detail;
-      }).join("") || `<tr><td colspan="7">Aucune société ne correspond.</td></tr>`;
+      }).join("") || `<tr><td colspan="8">Aucune société ne correspond.</td></tr>`;
       document.querySelectorAll("th[data-k]").forEach((th) => th.setAttribute("aria-sort", th.dataset.k === etat.k ? (etat.dir < 0 ? "descending" : "ascending") : "none"));
-      document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.f === etat.f));
+      document.querySelectorAll(".outils .seg button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.f === etat.f));
       try { localStorage.setItem("releve-tri", JSON.stringify({ f: etat.f, k: etat.k, dir: etat.dir })); } catch (e) {}
     }
     const dessinerMovers = () => {
@@ -354,12 +360,16 @@ footer { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 0.8rem
     };
     dessinerMovers();
     tableau();
+    $("#bloc-variation").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-p]");
+      if (b) $("#bloc-variation").innerHTML = variation(j, b.dataset.p);
+    });
     direct(j, () => { dessinerReperes(); dessinerMovers(); tableau(); });
     document.querySelectorAll("th[data-k] button").forEach((b) => b.addEventListener("click", () => {
       const k = b.parentElement.dataset.k;
       etat.dir = etat.k === k ? -etat.dir : (k === "nom" ? 1 : -1); etat.k = k; tableau();
     }));
-    document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { etat.f = b.dataset.f; tableau(); }));
+    document.querySelectorAll(".outils .seg button").forEach((b) => b.addEventListener("click", () => { etat.f = b.dataset.f; tableau(); }));
     $("#recherche").addEventListener("input", (e) => { etat.q = e.target.value.trim().toLowerCase(); tableau(); });
     const basculer = (tr) => { etat.ouvert = etat.ouvert === tr.dataset.t ? null : tr.dataset.t; tableau(); };
     $("#corps").addEventListener("click", (e) => { const tr = e.target.closest("tr.ligne-val"); if (tr) basculer(tr); });
